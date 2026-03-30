@@ -17,6 +17,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+/* Health Check Endpoint */
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Hospital Appointment System Backend is running" });
+});
+
 /* Routes */
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);

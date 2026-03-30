@@ -10,12 +10,12 @@
 }
 
 .auth-box {
-
   background: white;
   padding: 30px;
   border-radius: 10px;
-  width: 300px;
-
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
 }
 
 .auth-box input {
@@ -28,10 +28,58 @@
 }
 
 .auth-box button {
-
   width: 100%;
   padding: 10px;
   background: #4facfe;
   border: none;
   color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.auth-box button:hover {
+  background: #3a96d9;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 20px;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .auth-box {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .auth-box input {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .auth-box button {
+    padding: 12px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .auth-box {
+    padding: 15px;
+  }
+
+  .auth-box input {
+    margin: 8px 0;
+    padding: 10px;
+  }
+
+  .auth-box button {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
 }
