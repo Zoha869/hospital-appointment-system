@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "projects": [
+    {
+      "name": "caresync-backend",
+      "rootDirectory": "caresync-backend"
+    },
+    {
+      "name": "caresync-frontend",
+      "rootDirectory": "caresync-frontend"
+    }
+  ]
+}
