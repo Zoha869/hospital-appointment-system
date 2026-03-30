@@ -14,15 +14,20 @@ dotenv.config();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-/* Health Check Endpoint */
+// Health Check Endpoint - Root path
 app.get("/", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Hospital Appointment System Backend is running" });
+  res.status(200).json({ 
+    status: "ok", 
+    message: "Hospital Appointment System Backend is running",
+    timestamp: new Date().toISOString()
+  });
 });
 
-/* Routes */
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/doctors", doctorRoutes);
@@ -30,19 +35,48 @@ app.use("/api/departments", departmentRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
 
-/* MongoDB connection */
-if (!process.env.MONGO_URI) {
-  console.error("Missing MONGO_URI in environment. Create a .env with MONGO_URI and JWT_SECRET.");
-}
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: "Not Found", 
+    path: req.path 
+  });
+});
 
-if (!mongoose.connection.readyState) {
-  mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-      console.log("MongoDB Connected ✅");
-    })
-    .catch((err) => {
-      console.log("MongoDB Error:", err);
+// Error handler
+app.use((err, req, res, next) => {
+  console.error("Error:", err.message);
+  res.status(err.status || 500).json({ 
+    error: err.message || "Internal Server Error" 
+  });
+});
+
+// MongoDB Connection (only once)
+let mongoConnected = false;
+
+const connectMongo = async () => {
+  if (mongoConnected || mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  if (!process.env.MONGO_URI) {
+    console.error("Missing MONGO_URI in environment variables");
+    return;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
     });
-}
+    mongoConnected = true;
+    console.log("MongoDB Connected ✅");
+  } catch (err) {
+    console.error("MongoDB Connection Error:", err.message);
+    mongoConnected = false;
+  }
+};
+
+// Connect MongoDB on startup
+connectMongo();
 
 export default app;
