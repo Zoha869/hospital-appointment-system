@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 
+dotenv.config();
+
 import authRoutes from "../routes/authRoutes.js";
 import appointmentRoutes from "../routes/appointmentRoutes.js";
 import doctorRoutes from "../routes/doctorRoutes.js";
@@ -10,13 +12,12 @@ import departmentRoutes from "../routes/departmentRoutes.js";
 import contactRoutes from "../routes/contactRoutes.js";
 import adminRoutes from "../routes/adminRoutes.js";
 
-dotenv.config();
-
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Health Check Endpoint - Root path
 app.get("/", (req, res) => {
@@ -45,13 +46,14 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error("Error:", err.message);
+  console.error("Error:", err);
   res.status(err.status || 500).json({ 
-    error: err.message || "Internal Server Error" 
+    error: err.message || "Internal Server Error",
+    path: req.path
   });
 });
 
-// MongoDB Connection (only once)
+// MongoDB Connection
 let mongoConnected = false;
 
 const connectMongo = async () => {
@@ -60,13 +62,14 @@ const connectMongo = async () => {
   }
 
   if (!process.env.MONGO_URI) {
-    console.error("Missing MONGO_URI in environment variables");
+    console.warn("Missing MONGO_URI in environment variables");
     return;
   }
 
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
     });
     mongoConnected = true;
     console.log("MongoDB Connected ✅");
@@ -76,7 +79,9 @@ const connectMongo = async () => {
   }
 };
 
-// Connect MongoDB on startup
-connectMongo();
+// Connect MongoDB on first request (lazy connection)
+app.use((req, res, next) => {
+  connectMongo().then(() => next()).catch(() => next());
+});
 
 export default app;
